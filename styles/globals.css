@@ -2,61 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-canvas-default: theme("colors.github.bg");
+  --color-canvas-subtle: theme("colors.github.bg-secondary");
+  --color-border-default: theme("colors.github.border");
+  --color-accent-fg: theme("colors.github.accent");
+  --color-success-fg: theme("colors.github.success");
+  --color-danger-fg: theme("colors.github.danger");
+}
+
+:root.dark {
+  --color-canvas-default: theme("colors.github.dark-bg");
+  --color-canvas-subtle: theme("colors.github.dark-bg-secondary");
+  --color-border-default: theme("colors.github.dark-border");
+  --color-accent-fg: theme("colors.github.dark-accent");
+  --color-success-fg: theme("colors.github.dark-success");
+  --color-danger-fg: theme("colors.github.dark-danger");
+}
+
 @layer base {
   body {
-    @apply bg-gradient-to-br from-gray-50 to-blue-50;
+    @apply bg-github-bg dark:bg-github-dark-bg text-github-fg dark:text-github-dark-fg;
   }
 }
 
 @layer components {
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-xl hover:scale-[1.02];
+  .github-card {
+    @apply bg-github-bg-secondary dark:bg-github-dark-bg-secondary
+           border border-github-border dark:border-github-dark-border
+           rounded-lg shadow-sm;
   }
 
-  .stat-card {
-    @apply rounded-2xl p-8 shadow-lg card-hover;
+  .github-button {
+    @apply px-3 py-2 text-sm font-medium
+           bg-github-bg-secondary dark:bg-github-dark-bg-secondary
+           border border-github-border dark:border-github-dark-border
+           rounded-md hover:bg-gray-50 dark:hover:bg-gray-800
+           transition-colors duration-200;
   }
 
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600;
-  }
-}
-
-/* Animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slideIn {
-  animation: slideIn 0.5s ease-out forwards;
-}
-
-/* Loading animation */
-.loading-dots:after {
-  content: ".";
-  animation: dots 1.5s steps(5, end) infinite;
-}
-
-@keyframes dots {
-  0%,
-  20% {
-    content: ".";
-  }
-  40% {
-    content: "..";
-  }
-  60% {
-    content: "...";
-  }
-  80%,
-  100% {
-    content: "";
+  .github-button-primary {
+    @apply px-3 py-2 text-sm font-medium text-white
+           bg-github-accent dark:bg-github-dark-accent
+           hover:bg-opacity-90 dark:hover:bg-opacity-90
+           rounded-md transition-colors duration-200;
   }
 }

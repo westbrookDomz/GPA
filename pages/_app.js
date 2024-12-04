@@ -1,12 +1,13 @@
+import { ThemeProvider } from "../contexts/ThemeContext";
+import ErrorBoundary from "../components/ErrorBoundary";
 import "../styles/globals.css";
-import { Inter } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function App({ Component, pageProps }) {
   return (
-    <main className={inter.className}>
-      <Component {...pageProps} />
-    </main>
+    <ThemeProvider>
+      <ErrorBoundary>
+        <Component {...pageProps} />
+      </ErrorBoundary>
+    </ThemeProvider>
   );
 }
