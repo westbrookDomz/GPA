@@ -1,186 +1,151 @@
-import React, { useState, useEffect } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+"use client";
+
+import React, { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { parseTranscript } from "../utils/transcriptParser";
-import * as XLSX from "xlsx";
 
 const TranscriptUploadClient = ({ onTranscriptParsed }) => {
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
-  }, []);
+  const onDrop = useCallback(
+    async (acceptedFiles) => {
+      try {
+        setError(null);
+        setIsLoading(true);
+        const file = acceptedFiles[0];
+        if (!file) {
+          throw new Error("No file selected");
+        }
 
-  const handleFileUpload = async (event) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const uploadedFile = event.target.files[0];
-      setFile(uploadedFile);
+        const fileName = file.name.toLowerCase();
+        let fileType;
 
-      if (uploadedFile.type === "application/pdf") {
-        const fileReader = new FileReader();
-        fileReader.onload = async function () {
-          const typedarray = new Uint8Array(this.result);
-          const pdf = await pdfjs.getDocument(typedarray).promise;
+        if (fileName.endsWith(".csv")) {
+          fileType = "csv";
+        } else if (fileName.endsWith(".xlsx")) {
+          fileType = "excel";
+        } else if (fileName.endsWith(".pdf")) {
+          fileType = "pdf";
+        } else {
+          throw new Error(
+            "Unsupported file format. Please use CSV, Excel, or PDF files."
+          );
+        }
 
-          let textContent = "";
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            textContent += content.items.map((item) => item.str).join(" ");
-          }
-
-          const parsedData = parseTranscript(textContent, "pdf");
-          onTranscriptParsed(parsedData);
-        };
-        fileReader.readAsArrayBuffer(uploadedFile);
-      } else if (
-        uploadedFile.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      ) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-              raw: false,
-              defval: null,
-              header: [
-                "CourseCode",
-                "CourseName",
-                "Grade",
-                "Credits",
-                "Semester",
-              ],
-            });
 
-            const parsedData = parseTranscript(jsonData, "excel");
+        reader.onload = async (e) => {
+          try {
+            const fileData = e.target.result;
+            const parsedData = await parseTranscript(fileData, fileType);
+            if (!parsedData) {
+              throw new Error("Failed to parse file");
+            }
             onTranscriptParsed(parsedData);
-          } catch (error) {
-            console.error("Error parsing Excel:", error);
-            setError("Error parsing Excel file. Please check the format.");
+          } catch (err) {
+            setError(err.message || "Error parsing transcript");
+          } finally {
+            setIsLoading(false);
           }
         };
-        reader.readAsArrayBuffer(uploadedFile);
+
+        reader.onerror = () => {
+          setError("Error reading file");
+          setIsLoading(false);
+        };
+
+        if (fileType === "csv") {
+          reader.readAsText(file);
+        } else if (fileType === "excel") {
+          reader.readAsBinaryString(file);
+        } else {
+          reader.readAsArrayBuffer(file);
+        }
+      } catch (err) {
+        setError(err.message || "Error uploading file");
+        setIsLoading(false);
       }
-    } catch (err) {
-      setError("Error processing file. Please try again.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const droppedFile = e.dataTransfer.files[0];
-    const input = document.createElement("input");
-    input.files = e.dataTransfer.files;
-    handleFileUpload({ target: { files: [droppedFile] } });
-  };
-
-  const LoadingOverlay = () => (
-    <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600 loading-dots">Processing your transcript</p>
-      </div>
-    </div>
+    },
+    [onTranscriptParsed]
   );
 
-  return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="p-8 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Upload Your Transcript
-        </h2>
-        <p className="text-gray-600">
-          Support for PDF and Excel (.xlsx) formats
-        </p>
-      </div>
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "text/csv": [".csv"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+      "application/pdf": [".pdf"],
+    },
+    multiple: false,
+  });
 
-      <div className="p-8">
-        <div
-          className={`flex justify-center items-center w-full ${
-            isDragging
-              ? "border-2 border-dashed border-blue-400 bg-blue-50"
-              : "border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-gray-50"
-          } rounded-lg transition-all duration-200`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <label className="w-full cursor-pointer">
-            <div className="flex flex-col items-center justify-center py-12">
+  return (
+    <div className="space-y-4">
+      <div
+        {...getRootProps()}
+        className={`
+          p-8 border-2 border-dashed rounded-lg cursor-pointer
+          transition-colors duration-200
+          bg-github-bg-secondary dark:bg-github-dark-bg-secondary
+          border-github-border dark:border-github-dark-border
+          hover:bg-github-bg dark:hover:bg-github-dark-bg
+          ${
+            isDragActive
+              ? "border-github-accent dark:border-github-dark-accent"
+              : ""
+          }
+          ${error ? "border-github-danger dark:border-github-dark-danger" : ""}
+        `}
+      >
+        <input {...getInputProps()} />
+        <div className="text-center">
+          {isLoading ? (
+            <div className="text-github-fg-muted dark:text-github-dark-fg-muted">
+              Processing...
+            </div>
+          ) : (
+            <>
               <svg
-                className="w-12 h-12 text-gray-400 group-hover:text-gray-600 mb-3"
-                fill="none"
+                className="mx-auto h-12 w-12 text-github-fg-muted dark:text-github-dark-fg-muted"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  strokeWidth={2}
+                  d="M24 8v24m0-24L16 16m8-8l8 8m-8 24a16 16 0 110-32 16 16 0 010 32z"
                 />
               </svg>
-              <div className="flex flex-col items-center">
-                <p className="mb-2 text-sm text-gray-500">
-                  <span className="font-semibold">Click to upload</span> or drag
-                  and drop
-                </p>
-                <p className="text-xs text-gray-500">PDF or Excel files only</p>
-              </div>
-            </div>
-            <input
-              type="file"
-              className="hidden"
-              accept=".pdf,.xlsx"
-              onChange={handleFileUpload}
-            />
-          </label>
+
+              <h3 className="mt-4 text-xl font-medium text-github-fg dark:text-github-dark-fg">
+                Upload Your Transcript
+              </h3>
+
+              <p className="mt-2 text-sm text-github-fg-muted dark:text-github-dark-fg-muted">
+                Support for CSV, Excel (.xlsx) and PDF formats
+              </p>
+
+              <p className="mt-1 text-sm text-github-fg-muted dark:text-github-dark-fg-muted">
+                {isDragActive
+                  ? "Drop the file here"
+                  : "Click to upload or drag and drop"}
+              </p>
+            </>
+          )}
         </div>
-
-        {loading && <LoadingOverlay />}
-
-        {error && (
-          <div className="mt-4 text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-full">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {error}
-            </div>
-          </div>
-        )}
       </div>
+
+      {error && (
+        <div className="p-4 bg-[var(--color-danger-subtle)] rounded-lg text-sm text-github-danger dark:text-github-dark-danger">
+          {error}
+        </div>
+      )}
     </div>
   );
 };

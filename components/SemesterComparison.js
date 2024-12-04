@@ -59,8 +59,8 @@ const SemesterComparison = ({ semesterGPAs, courses }) => {
   });
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">
+    <div className="github-card p-8">
+      <h3 className="text-2xl font-bold text-gray-800 dark:text-[#c9d1d9] mb-6">
         Semester Comparison
       </h3>
 
@@ -112,10 +112,14 @@ const SemesterComparison = ({ semesterGPAs, courses }) => {
         {semesterMetrics.map((semester) => (
           <div
             key={semester.semester}
-            className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-4 bg-[var(--color-canvas-subtle)] rounded-lg 
+                      hover:bg-[var(--color-btn-hover-bg)] transition-colors
+                      border border-[var(--color-border-default)]"
           >
-            <h4 className="font-semibold text-gray-900">{semester.semester}</h4>
-            <div className="mt-2 space-y-1 text-sm text-gray-600">
+            <h4 className="font-semibold text-gray-900 dark:text-[#c9d1d9]">
+              {semester.semester}
+            </h4>
+            <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-[#8b949e]">
               <p>GPA: {semester.gpa.toFixed(2)}</p>
               <p>Courses: {semester.courseCount}</p>
               <p>Credits: {semester.totalCredits}</p>

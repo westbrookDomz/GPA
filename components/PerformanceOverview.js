@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -14,12 +14,53 @@ import {
 import DegreeProgress from "./DegreeProgress";
 import GPACalculator from "./GPACalculator";
 import SemesterComparison from "./SemesterComparison";
+import { motion } from "framer-motion";
+import { Tooltip as TooltipComponent } from "./Tooltip";
 
 const PerformanceOverview = ({ transcriptData }) => {
   const { overallGPA, semesterGPAs, topCourses, coursesByGrade, courses } =
     transcriptData;
 
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState("light");
+
+  // Add theme detection
+  useEffect(() => {
+    // Check if user prefers dark mode
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    setTheme(prefersDark ? "dark" : "light");
+
+    // Listen for theme changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e) => {
+      setTheme(e.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // CSS variables for theming
+  const themeColors = {
+    light: {
+      bgSecondary: "#f6f8fa",
+      borderDefault: "#d0d7de",
+      fg: "#24292f",
+      fgMuted: "#57606a",
+      accent: "#0969da",
+    },
+    dark: {
+      bgSecondary: "#161b22",
+      borderDefault: "#30363d",
+      fg: "#c9d1d9",
+      fgMuted: "#8b949e",
+      accent: "#58a6ff",
+    },
+  };
+
+  const currentTheme = themeColors[theme];
 
   const GradePrediction = ({ transcriptData }) => {
     const predictGPA = () => {
@@ -30,12 +71,14 @@ const PerformanceOverview = ({ transcriptData }) => {
     };
 
     return (
-      <div className="stat-card bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
+      <div className="github-card p-8 bg-[var(--color-accent-subtle)]">
         <h3 className="text-lg font-semibold opacity-90 mb-2">
           Predicted Next GPA
         </h3>
-        <div className="text-5xl font-bold mb-2">{predictGPA().toFixed(2)}</div>
-        <p className="text-purple-100">Based on your recent performance</p>
+        <div className="text-5xl font-bold mb-2 text-[var(--color-accent-fg)]">
+          {predictGPA().toFixed(2)}
+        </div>
+        <p className="text-gray-600">Based on your recent performance</p>
       </div>
     );
   };
@@ -69,51 +112,56 @@ const PerformanceOverview = ({ transcriptData }) => {
 
     if (needsImprovement.length === 0) {
       return (
-        <div className="bg-white rounded-2xl p-8 shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className="github-card p-8">
+          <h3 className="text-github-fg dark:text-github-dark-fg text-2xl font-bold mb-6">
             Courses Needing Improvement
           </h3>
-          <div className="text-center text-gray-500 py-8">
-            <p>Great job! No courses need improvement.</p>
-            <p className="text-sm mt-2">All your grades are B- or better.</p>
+          <div className="text-center bg-[var(--color-success-subtle)] p-8 rounded-lg">
+            <p className="text-github-fg dark:text-github-dark-fg">
+              Great job! No courses need improvement.
+            </p>
+            <p className="text-github-fg-muted dark:text-github-dark-fg-muted text-sm mt-2">
+              All your grades are B- or better.
+            </p>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-lg">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6">
+      <div className="github-card p-8">
+        <h3 className="text-github-fg dark:text-github-dark-fg text-2xl font-bold mb-6">
           Courses Needing Improvement
         </h3>
         <div className="space-y-4">
           {needsImprovement.map((course) => (
             <div
               key={course.code}
-              className="p-4 bg-red-50 rounded-xl border border-red-100
-                        transform transition-all duration-200 hover:scale-[1.02]
-                        hover:shadow-md"
+              className="p-4 bg-[var(--color-danger-subtle)] rounded-lg 
+                        border border-[var(--color-danger-fg)] border-opacity-20"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-github-fg dark:text-github-dark-fg">
                     {course.name}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="text-sm text-github-fg-muted dark:text-github-dark-fg-muted mt-1">
                     {course.code}
                   </div>
-                  <div className="text-sm text-red-600 mt-2">
+                  <div className="text-sm text-github-danger dark:text-github-dark-danger mt-2">
                     {course.semester}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Grade:</span>
-                  <span className="text-lg font-bold text-red-600">
+                  <span className="text-sm text-github-fg-muted dark:text-github-dark-fg-muted">
+                    Grade:
+                  </span>
+                  <span className="text-lg font-bold text-github-danger dark:text-github-dark-danger">
                     {course.grade}
                   </span>
                 </div>
               </div>
-              <div className="mt-3 text-sm text-gray-500">
+              <div className="mt-3 text-sm text-github-fg-muted dark:text-github-dark-fg-muted">
                 {course.grade === "F" ? (
                   <p>Consider retaking this course to improve your GPA.</p>
                 ) : (
@@ -134,69 +182,91 @@ const PerformanceOverview = ({ transcriptData }) => {
       {/* Top Stats Section */}
       <div className="grid md:grid-cols-3 gap-8">
         {/* Overall GPA Card */}
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
-          <h3 className="text-lg font-semibold opacity-90 mb-2">Overall GPA</h3>
-          <div className="text-5xl font-bold mb-2">{overallGPA.toFixed(2)}</div>
-          <p className="text-blue-100">out of 4.3</p>
+        <div className="github-card p-6">
+          <h3 className="text-github-fg-muted dark:text-github-dark-fg-muted text-sm font-medium mb-2">
+            Overall GPA
+          </h3>
+          <div className="text-4xl font-bold text-github-fg dark:text-github-dark-fg mb-2">
+            {overallGPA.toFixed(2)}
+          </div>
+          <p className="text-github-fg-muted dark:text-github-dark-fg-muted text-sm">
+            out of 4.3
+          </p>
         </div>
 
         {/* Total Courses Card */}
-        <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-8 text-white shadow-xl">
-          <h3 className="text-lg font-semibold opacity-90 mb-2">
+        <div className="github-card p-6">
+          <h3 className="text-github-fg-muted dark:text-github-dark-fg-muted text-sm font-medium mb-2">
             Total Courses
           </h3>
-          <div className="text-5xl font-bold mb-2">
+          <div className="text-4xl font-bold text-github-fg dark:text-github-dark-fg mb-2">
             {coursesByGrade.reduce((acc, curr) => acc + curr.count, 0)}
           </div>
-          <p className="text-orange-100">completed</p>
+          <p className="text-github-fg-muted dark:text-github-dark-fg-muted text-sm">
+            completed
+          </p>
         </div>
 
         {/* Best Grade Card */}
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 text-white shadow-xl">
-          <h3 className="text-lg font-semibold opacity-90 mb-2">Best Grade</h3>
-          <div className="text-5xl font-bold mb-2">
+        <div className="github-card p-6">
+          <h3 className="text-github-fg-muted dark:text-github-dark-fg-muted text-sm font-medium mb-2">
+            Best Grade
+          </h3>
+          <div className="text-4xl font-bold text-github-fg dark:text-github-dark-fg mb-2">
             {coursesByGrade[0]?.grade || "N/A"}
           </div>
-          <p className="text-emerald-100">highest achieved</p>
+          <p className="text-github-fg-muted dark:text-github-dark-fg-muted text-sm">
+            highest achieved
+          </p>
         </div>
       </div>
 
       {/* GPA Trend Chart */}
-      <div className="bg-white rounded-2xl p-8 shadow-lg">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6">
-          GPA Progression
-        </h3>
+      <div className="github-card p-6">
+        <h3 className="github-header">GPA Progression</h3>
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={semesterGPAs}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--color-border-default)"
+              />
               <XAxis
                 dataKey="semester"
-                stroke="#6B7280"
-                fontSize={12}
-                tickLine={false}
+                stroke="var(--color-fg-muted)"
+                tick={{ fill: "var(--color-fg-muted)" }}
               />
               <YAxis
                 domain={[0, 4.3]}
-                stroke="#6B7280"
-                fontSize={12}
-                tickLine={false}
+                stroke="var(--color-fg-muted)"
+                tick={{ fill: "var(--color-fg-muted)" }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "white",
-                  borderRadius: "0.75rem",
-                  border: "none",
-                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  backgroundColor: "var(--color-bg-secondary)",
+                  border: "1px solid var(--color-border-default)",
+                  borderRadius: "6px",
+                  color: "var(--color-fg)",
+                }}
+                labelStyle={{
+                  color: "var(--color-fg-muted)",
                 }}
               />
-              <Legend />
+              <Legend
+                wrapperStyle={{
+                  color: "var(--color-fg-muted)",
+                }}
+              />
               <Line
                 type="monotone"
                 dataKey="gpa"
-                stroke="#4F46E5"
-                strokeWidth={3}
-                dot={{ fill: "#4F46E5", strokeWidth: 2 }}
+                name="GPA"
+                stroke="var(--color-accent)"
+                strokeWidth={2}
+                dot={{
+                  fill: "var(--color-accent)",
+                  strokeWidth: 2,
+                }}
                 activeDot={{ r: 8 }}
               />
             </LineChart>
@@ -204,33 +274,49 @@ const PerformanceOverview = ({ transcriptData }) => {
         </div>
       </div>
 
+      {/* Update the style tag */}
+      <style jsx global>{`
+        :root {
+          --color-bg-secondary: ${currentTheme.bgSecondary};
+          --color-border-default: ${currentTheme.borderDefault};
+          --color-fg: ${currentTheme.fg};
+          --color-fg-muted: ${currentTheme.fgMuted};
+          --color-accent: ${currentTheme.accent};
+        }
+      `}</style>
+
       {/* Bottom Section */}
       <div className="grid md:grid-cols-2 gap-8">
         {/* Top Courses */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className="github-card p-8">
+          <h3 className="text-github-fg dark:text-github-dark-fg text-2xl font-bold mb-6">
             Top Performing Courses
           </h3>
           <div className="space-y-4">
             {topCourses.map((course, index) => (
               <div
                 key={course.code}
-                className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl 
-                          transform transition-all duration-200 hover:scale-[1.02]
-                          hover:shadow-md"
+                className={`
+                  p-4 bg-[var(--color-canvas-subtle)] rounded-lg border
+                  border-[var(--color-border-default)] 
+                  hover:bg-white dark:hover:bg-github-dark-bg-secondary
+                  transition-colors duration-200
+                `}
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="font-semibold text-gray-900">
+                    <div className="font-semibold text-github-fg dark:text-github-dark-fg">
                       {course.name}
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="text-sm text-github-fg-muted dark:text-github-dark-fg-muted mt-1">
                       {course.code}
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">Grade:</span>
-                    <span className="text-lg font-bold text-blue-600">
+                    <span className="text-sm text-github-fg-muted dark:text-github-dark-fg-muted">
+                      Grade:
+                    </span>
+                    <span className="text-lg font-bold text-github-accent dark:text-github-dark-accent">
                       {course.grade}
                     </span>
                   </div>
@@ -241,32 +327,45 @@ const PerformanceOverview = ({ transcriptData }) => {
         </div>
 
         {/* Grade Distribution */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className="github-card p-8">
+          <h3 className="text-github-fg dark:text-github-dark-fg text-2xl font-bold mb-6">
             Grade Distribution
           </h3>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={coursesByGrade}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border-default)"
+                  className="dark:opacity-20"
+                />
                 <XAxis
                   dataKey="grade"
-                  stroke="#6B7280"
+                  stroke="var(--color-fg-muted)"
+                  tick={{ fill: "var(--color-fg-muted)" }}
                   fontSize={12}
                   tickLine={false}
                 />
-                <YAxis stroke="#6B7280" fontSize={12} tickLine={false} />
+                <YAxis
+                  stroke="var(--color-fg-muted)"
+                  tick={{ fill: "var(--color-fg-muted)" }}
+                  fontSize={12}
+                  tickLine={false}
+                />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "white",
-                    borderRadius: "0.75rem",
-                    border: "none",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    backgroundColor: "var(--color-bg-secondary)",
+                    border: "1px solid var(--color-border-default)",
+                    borderRadius: "6px",
+                    color: "var(--color-fg)",
+                  }}
+                  labelStyle={{
+                    color: "var(--color-fg-muted)",
                   }}
                 />
                 <Bar
                   dataKey="count"
-                  fill="#4F46E5"
+                  fill="var(--color-accent)"
                   radius={[4, 4, 0, 0]}
                   barSize={30}
                 />

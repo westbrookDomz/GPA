@@ -1,20 +1,33 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
-      animation: {
-        fadeIn: "fadeIn 0.5s ease-out forwards",
-        float: "float 3s ease-in-out infinite",
-      },
-      keyframes: {
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
+      colors: {
+        github: {
+          // Light mode
+          bg: "#ffffff",
+          "bg-secondary": "#f6f8fa",
+          border: "#d0d7de",
+          fg: "#24292f",
+          "fg-muted": "#57606a",
+          accent: "#0969da",
+          success: "#1a7f37",
+          danger: "#cf222e",
+
+          // Dark mode
+          "dark-bg": "#0d1117",
+          "dark-bg-secondary": "#161b22",
+          "dark-border": "#30363d",
+          "dark-fg": "#c9d1d9",
+          "dark-fg-muted": "#8b949e",
+          "dark-accent": "#58a6ff",
+          "dark-success": "#3fb950",
+          "dark-danger": "#f85149",
         },
       },
     },
