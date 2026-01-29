@@ -1,71 +1,94 @@
-# Getting Started with Create React App
+# Academic Performance Analysis
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A powerful Next.js application designed to visualize and analyze your academic journey. Upload your transcript data to gain insights into your GPA trends, grade distributions, and degree progress.
 
-## Available Scripts
+## 🚀 Features
 
-In the project directory, you can run:
+- **Transcript Analysis**: Parse and visualize transcript data from CSV or Excel files.
+- **Interactive Dashboards**:
+  - **Performance Overview**: At-a-glance view of your academic standing.
+  - **Semester Comparison**: Compare performance across different semesters.
+  - **Subject Analysis**: Break down your grades by subject or course code.
+- **GPA Tools**:
+  - **Smart Calculation**: Automatically calculates overall and semester-wise GPAs.
+  - **"What If" Calculator**: Simulate future grades to see how they affect your overall GPA.
+- **Degree Progress**: Track your credit completion and progress towards graduation.
+- **Report Generation**: Export analysis results and transcripts as styled PDF documents.
+- **Privacy First**: All data processing happens client-side; your academic data never leaves your browser.
 
-### `npm start`
+## 🛠️ Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Framework**: [Next.js 15](https://nextjs.org/)
+- **UI Library**: [React 18](https://reactjs.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Visualization**: [Recharts](https://recharts.org/)
+- **Data Processing**:
+  - [PapaParse](https://www.papaparse.com/) (CSV)
+  - [SheetJS (xlsx)](https://sheetjs.com/) (Excel)
+- **PDF Generation**: [@react-pdf/renderer](https://react-pdf.org/)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🏁 Getting Started
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js (v18 or higher recommended)
+- npm or yarn
 
-### `npm run build`
+### Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Clone the repository:**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+   ```bash
+   git clone https://github.com/yourusername/gpa-overtime.git
+   cd gpa-overtime
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. **Install dependencies:**
 
-### `npm run eject`
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. **Run the development server:**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. **Open your browser:**
+   Navigate to [http://localhost:3001](http://localhost:3001) to see the application.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 📂 Project Structure
 
-## Learn More
+```bash
+├── components/          # Reusable UI components and analysis widgets
+│   ├── PerformanceOverview.js  # Main dashboard component
+│   ├── GPACalculator.js        # Logic for GPA computation
+│   └── ...
+├── pages/              # Next.js pages and routing
+│   └── index.js        # Main entry point
+├── public/             # Static assets
+├── utils/              # Helper functions and parsers
+│   └── transcriptParser.js # Logic for parsing CSV/Excel files
+└── styles/             # Global styles and Tailwind config
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📝 Usage Guide
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. **Prepare your Transcript**: Export your transcript as a CSV or Excel (`.xlsx`) file.
+   - _Supported Headers_: `Course Code`, `Course Name`, `Credits`, `Grade`, `Semester`.
+2. **Upload**: Click the upload area on the home page and select your file.
+3. **Analyze**: Explore the dashboard to see your GPA trends and performance breakdown.
+4. **Plan**: Use the "What If" calculator to plan your future semesters.
 
-### Code Splitting
+## 🤝 Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-### Analyzing the Bundle Size
+## 📄 License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# GPA
+This project is licensed under the MIT License.
